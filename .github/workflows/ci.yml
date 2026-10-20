@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        shell: bash
+        run: for f in src/*.js src/renderer/*.js src/hub/*.js scripts/*.js test/*.js; do node --check "$f"; done
+      - name: Unit tests
+        run: npm test
+
+  e2e:
+    # Drives the real app with Playwright. Hosted runners have a desktop session, but
+    # display scaling and shell icons differ from a real PC, so this job doesn't block merges.
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: End-to-end tests
+        run: npm run test:e2e
+        env:
+          SHOTS_DIR: ${{ runner.temp }}/shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: ${{ runner.temp }}/shots

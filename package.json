@@ -1,0 +1,37 @@
+{
+  "name": "desktop-pods",
+  "productName": "Desktop Pods",
+  "version": "0.1.0",
+  "description": "Widget-style pods on the Windows desktop that hold links to your files and apps, with themes, custom icons and photo widgets.",
+  "license": "Apache-2.0",
+  "keywords": [
+    "windows",
+    "desktop",
+    "widgets",
+    "launcher",
+    "electron",
+    "fences"
+  ],
+  "main": "src/main.js",
+  "private": true,
+  "os": [
+    "win32"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "electron .",
+    "sandbox": "node scripts/make-sandbox.js && electron . --sandbox",
+    "sandbox:reset": "node scripts/make-sandbox.js --reset && electron . --sandbox",
+    "test": "node --test \"test/unit/*.test.js\"",
+    "test:e2e": "node test/e2e.js"
+  },
+  "dependencies": {
+    "electron": "^44.8.0",
+    "koffi": "^3.3.3"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.1"
+  }
+}

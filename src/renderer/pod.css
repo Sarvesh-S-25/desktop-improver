@@ -1,0 +1,654 @@
+/* Desktop Pods: one glass pod per window.
+   Signature: the App-Library box (3 icons + a cluster that springs open). Everything else stays quiet. */
+:root {
+  --pad: 18px;
+  --r-closed: 26px;
+  --r-open: 30px;
+  --ink: rgba(255, 255, 255, 0.97);
+  --ink-2: rgba(255, 255, 255, 0.74);
+  --ink-shadow: 0 1px 2px rgba(0, 0, 0, 0.38);
+  --hair: rgba(255, 255, 255, 0.34);
+  --hover: rgba(255, 255, 255, 0.14);
+  --well: rgba(255, 255, 255, 0.18);
+  --focus: #5aa9ff;
+  --tint: rgba(244, 246, 250, 0.3);
+  --veil: rgba(10, 12, 18, 0.1);
+  --icon: 52px;
+  --spring-open: cubic-bezier(0.2, 1.14, 0.32, 1);
+  --ease-close: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-open: 520ms;
+  --t-close: 340ms;
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+}
+:root.ink-dark {
+  --ink: rgba(16, 18, 24, 0.94);
+  --ink-2: rgba(16, 18, 24, 0.66);
+  --ink-shadow: 0 1px 1px rgba(255, 255, 255, 0.22);
+  --hair: rgba(255, 255, 255, 0.6);
+  --hover: rgba(0, 0, 0, 0.07);
+  --well: rgba(0, 0, 0, 0.08);
+  --focus: #0a64d8;
+  color-scheme: light;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---- Glass ---------------------------------------------------------------- */
+/* No transform/filter on .glass: the fixed wallpaper background must stay aligned with the screen. */
+.glass {
+  position: absolute;
+  left: var(--pad);
+  top: var(--pad);
+  width: calc(100vw - 2 * var(--pad));
+  height: calc(100vh - 2 * var(--pad));
+  box-sizing: border-box;
+  border-radius: var(--r-closed);
+  overflow: hidden;
+  color: var(--ink);
+  outline: none;
+  background-color: var(--veil);
+  background-image: var(--wall, none);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: var(--wall-size, cover);
+  background-position: var(--wall-pos, 0 0);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26), 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+.glass.is-open { border-radius: var(--r-open); }
+.glass.solid { background-image: none; background-color: var(--solid); }
+.glass.solid .tint { background: none; }
+
+.glass.anim {
+  transition-property: left, top, width, height, border-radius;
+}
+.glass.anim.opening { transition-duration: var(--t-open); transition-timing-function: var(--spring-open); }
+.glass.anim.closing { transition-duration: var(--t-close); transition-timing-function: var(--ease-close); }
+
+.tint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--tint);
+  box-shadow: inset 0 0 0 1px var(--hair), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+
+/* ---- Shared item pieces ---------------------------------------------------- */
+.ic {
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.24));
+  transition: transform 140ms ease;
+  pointer-events: none;
+}
+.ic.ph {
+  border-radius: 24%;
+  background: var(--well);
+  filter: none;
+}
+.missing .ic { opacity: 0.4; }
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  border-radius: 14px;
+  outline: none;
+  cursor: default;
+}
+.tile:active .ic { transform: scale(0.9); }
+.tile:focus-visible { box-shadow: inset 0 0 0 2px var(--focus); }
+.tile .nm {
+  font-size: 12px;
+  line-height: 1.25;
+  max-width: 100%;
+  text-align: center;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+  text-shadow: var(--ink-shadow);
+}
+
+.btn {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--well);
+  color: inherit;
+  padding: 0;
+  cursor: default;
+}
+.btn:hover { background: var(--hover); box-shadow: inset 0 0 0 1px var(--hair); }
+.btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.btn svg { width: 14px; height: 14px; }
+
+.inline-edit {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 6px;
+  padding: 1px 6px;
+  background: var(--well);
+  box-shadow: inset 0 0 0 1.5px var(--focus);
+  outline: none;
+  text-align: inherit;
+  user-select: text;
+}
+
+.empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px;
+  border-radius: 16px;
+  border: 1.5px dashed var(--hair);
+  font-size: 12px;
+  color: var(--ink-2);
+  text-align: center;
+  padding: 8px;
+  text-shadow: var(--ink-shadow);
+}
+
+/* ---- Closed folder: the App Library box ------------------------------------ */
+.closed-view {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--cw, 100%);
+  height: var(--ch, 100%);
+  transition: opacity 180ms ease 80ms;
+}
+.folder {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 8px;
+}
+.cgrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+}
+.cell {
+  container-type: size;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.cell .tile { justify-content: center; width: 100%; height: 100%; }
+.cell .tile:hover { background: var(--hover); }
+.cell .ic { width: 74cqmin; height: 74cqmin; }
+.cluster {
+  width: 74cqmin;
+  height: 74cqmin;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8%;
+  padding: 7%;
+  box-sizing: border-box;
+  border-radius: 24%;
+  background: var(--well);
+  outline: none;
+}
+.cluster:hover { box-shadow: inset 0 0 0 1px var(--hair); }
+.cluster:focus-visible { box-shadow: inset 0 0 0 2px var(--focus); }
+.cluster .ic { width: 100%; height: 100%; filter: none; }
+.label {
+  flex: none;
+  padding-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: var(--ink-shadow);
+}
+
+/* ---- Strip: shows N at a time, scrolls sideways ---------------------------- */
+.strip {
+  position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 6px 8px;
+}
+.shead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 4px;
+  min-height: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: var(--ink-shadow);
+}
+.shead .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dots { display: flex; gap: 5px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); opacity: 0.3; transition: opacity 160ms ease; }
+.dot.on { opacity: 0.95; }
+.track {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc(100% / var(--n, 3));
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.track::-webkit-scrollbar { display: none; }
+.track .tile {
+  container-type: size;
+  scroll-snap-align: start;
+  justify-content: center;
+  gap: 6px;
+  padding: 2px 4px;
+  box-sizing: border-box;
+}
+.track .tile:hover { background: var(--hover); }
+.track .ic { width: min(var(--icon), 62cqh, 76cqw); height: min(var(--icon), 62cqh, 76cqw); }
+.track .nm { -webkit-line-clamp: 1; }
+.arrow {
+  position: absolute;
+  top: calc(50% + 8px);
+  translate: 0 -50%;
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.arrow.prev { left: 4px; }
+.arrow.next { right: 4px; }
+.strip:hover .arrow:not([disabled]) { opacity: 1; }
+.arrow[disabled] { visibility: hidden; }
+
+/* ---- Open folder ------------------------------------------------------------ */
+.open-view {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--ow, 100%);
+  height: var(--oh, 100%);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.glass.is-open .open-view { opacity: 1; pointer-events: auto; transition: opacity 220ms ease 110ms; }
+.glass.is-open .closed-view { opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+.ohead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 16px 6px 22px;
+}
+.oname {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: var(--ink-shadow);
+}
+.ocount { font-size: 12px; color: var(--ink-2); text-shadow: var(--ink-shadow); white-space: nowrap; }
+.ogrid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--icon) + 34px), 1fr));
+  align-content: start;
+  gap: 8px 4px;
+  padding: 8px 14px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hair) transparent;
+}
+.ogrid .tile { gap: 6px; padding: 8px 4px; }
+.ogrid .tile:hover { background: var(--hover); }
+.ogrid .ic { width: var(--icon); height: var(--icon); }
+.ogrid .empty { grid-column: 1 / -1; min-height: 140px; }
+.tile.lifting { opacity: 0.35; }
+.tile.drop-before { box-shadow: inset 3px 0 0 var(--focus); }
+.tile.drop-after { box-shadow: inset -3px 0 0 var(--focus); }
+
+/* ---- Overlays ----------------------------------------------------------------- */
+.drop-hint {
+  position: absolute;
+  inset: 6px;
+  border-radius: calc(var(--r-closed) - 6px);
+  border: 2px dashed var(--focus);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: var(--ink-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.drop-hint span { background: var(--well); padding: 4px 10px; border-radius: 999px; }
+.glass.dropping .drop-hint { opacity: 1; }
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  translate: -50% 6px;
+  width: max-content;
+  max-width: calc(100% - 20px);
+  box-sizing: border-box;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(20, 22, 28, 0.82);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, translate 160ms ease;
+}
+.toast.show { opacity: 1; translate: -50% 0; }
+
+.resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  cursor: nwse-resize;
+}
+.glass.is-open .resize::after { right: 13px; bottom: 13px; }
+.resize::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--ink-2);
+  border-bottom: 2px solid var(--ink-2);
+  border-bottom-right-radius: 6px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.glass:hover .resize::after { opacity: 0.8; }
+.glass.locked .resize, .glass.anim .resize { display: none; }
+.glass.dragging { cursor: grabbing; }
+
+.test-badge {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  translate: -50% 0;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e8a317;
+  color: #1b1405;
+  pointer-events: none;
+}
+
+/* "Show me" from the hub: a soft ring pulse on the glass edge */
+.glass.flash .tint { animation: flash 1.6s ease-out; }
+@keyframes flash {
+  0%, 50% { box-shadow: inset 0 0 0 3px var(--focus), inset 0 1px 0 rgba(255, 255, 255, 0.22); }
+  100% { box-shadow: inset 0 0 0 1px var(--hair), inset 0 1px 0 rgba(255, 255, 255, 0.22); }
+}
+
+/* ---- Accessibility preferences --------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-open: 1ms; --t-close: 1ms; }
+  .closed-view, .open-view, .glass.is-open .open-view, .glass.is-open .closed-view { transition: none; }
+  .tile:active .ic { transform: none; }
+}
+@media (prefers-contrast: more) {
+  .tint { box-shadow: inset 0 0 0 1.5px var(--ink-2); }
+  .tile .nm, .label, .shead, .oname { text-shadow: none; }
+}
+
+/* ======================================================================================
+   Pieces shared by every theme: cover photo, custom icons, matching tiles, selection
+   ====================================================================================== */
+:root { --accent: #ffffff; --accent-soft: rgba(255, 255, 255, 0.16); --accent-glow: rgba(255, 255, 255, 0.3); --chip: rgba(255, 255, 255, 0.24); --glyph: brightness(0) invert(1); }
+
+.cover {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-size: cover;
+  background-position: center;
+  display: none;
+  pointer-events: none;
+}
+.has-cover .cover { display: block; }
+/* Scrim keeps labels readable on any photo; heavier while open so the grid stays legible. */
+html.has-cover .tint { background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 35%, rgba(0, 0, 0, 0.55)); }
+.has-cover .glass.is-open .tint { background: rgba(8, 8, 12, 0.58); }
+.has-cover .glass { background: #222; }
+.photo-only .label { text-align: left; padding: 0 2px 2px; font-size: 13px; }
+.spacer { flex: 1; }
+
+.ic.photo { object-fit: cover; border-radius: 24%; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.28)); }
+.ic.chip {
+  display: grid;
+  place-items: center;
+  border-radius: 26%;
+  background: var(--chip);
+  filter: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+.ic.chip .glyph { width: 56%; height: 56%; object-fit: contain; filter: var(--glyph); opacity: 0.95; }
+.cluster .ic.chip { box-shadow: none; }
+
+.tile.selected { background: var(--accent-soft) !important; box-shadow: inset 0 0 0 2px var(--accent); }
+.tile.selected .ic { transform: scale(0.94); }
+
+.badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: none;
+  font: 700 10px/1 'Cascadia Mono', 'Cascadia Code', Consolas, monospace;
+  letter-spacing: 0.04em;
+  padding: 4px 7px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.lockmark {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--well);
+  color: var(--ink-2);
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.lockmark svg { width: 10px; height: 10px; }
+.glass:hover .lockmark { opacity: 1; }
+.glass.is-open .lockmark { display: none; }
+
+/* ======================================================================================
+   BENTO: black cards, one bright accent, monospace labels, a faint dot matrix
+   ====================================================================================== */
+.theme-bento {
+  --ink: #f4f4f5;
+  --ink-2: rgba(244, 244, 245, 0.56);
+  --ink-shadow: none;
+  --hair: rgba(255, 255, 255, 0.09);
+  --hover: rgba(255, 255, 255, 0.06);
+  --well: #1c1c20;
+  --focus: var(--accent);
+  --chip: var(--accent);
+  --glyph: brightness(0);
+}
+.theme-bento .glass {
+  background: #0c0c0e;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.theme-bento .tint {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.055) 1px, transparent 1.6px) 0 0 / 11px 11px;
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.theme-bento .label, .theme-bento .shead, .theme-bento .ocount {
+  font-family: 'Cascadia Mono', 'Cascadia Code', Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.theme-bento .label { text-align: left; padding-left: 4px; }
+.theme-bento .shead .nm { color: var(--ink); }
+.theme-bento .oname { font-family: 'Cascadia Mono', 'Cascadia Code', Consolas, monospace; font-weight: 700; font-size: 18px; letter-spacing: 0.02em; text-transform: uppercase; }
+.theme-bento .ocount { color: var(--accent); }
+.theme-bento .badge { display: block; background: var(--accent); color: #0c0c0e; }
+.theme-bento .cell .tile:hover, .theme-bento .track .tile:hover, .theme-bento .ogrid .tile:hover { background: var(--hover); box-shadow: inset 0 0 0 1px var(--accent-soft); }
+.theme-bento .cluster { background: #19191d; box-shadow: inset 0 0 0 1px var(--hair); }
+.theme-bento .dot { background: var(--accent); opacity: 0.22; border-radius: 2px; }
+.theme-bento .dot.on { opacity: 1; }
+.theme-bento .btn { background: #1c1c20; }
+.theme-bento .btn:hover { background: var(--accent); color: #0c0c0e; box-shadow: none; }
+.theme-bento .empty { border-color: var(--accent-soft); font-family: 'Cascadia Mono', Consolas, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.theme-bento .empty .btn { background: var(--accent); color: #0c0c0e; }
+
+/* ======================================================================================
+   NEBULA: deep violet, neon edge glow, contour lines like a topo map
+   ====================================================================================== */
+.theme-nebula {
+  --ink: #f3f0ff;
+  --ink-2: rgba(226, 218, 255, 0.62);
+  --ink-shadow: none;
+  --hair: rgba(190, 170, 255, 0.16);
+  --hover: rgba(255, 255, 255, 0.06);
+  --well: rgba(255, 255, 255, 0.07);
+  --focus: var(--accent);
+  --chip: linear-gradient(145deg, var(--accent), rgba(30, 20, 60, 0.9));
+}
+.theme-nebula .glass {
+  background:
+    radial-gradient(120% 80% at 50% -10%, var(--accent-glow), transparent 62%),
+    linear-gradient(180deg, #17121f, #0b0910);
+  box-shadow: 0 10px 26px -10px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+.theme-nebula .tint {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23c9b8ff' stroke-opacity='.13' stroke-width='1'%3E%3Cpath d='M0 170 Q60 120 120 150 T240 120 T400 140'/%3E%3Cpath d='M0 182 Q70 135 130 162 T250 134 T400 152'/%3E%3Cpath d='M0 194 Q80 150 140 174 T260 148 T400 164'/%3E%3Cpath d='M0 158 Q50 105 110 138 T230 106 T400 128'/%3E%3Cpath d='M0 146 Q40 92 100 126 T220 92 T400 116'/%3E%3C/g%3E%3C/svg%3E") bottom / 100% 70% no-repeat;
+  box-shadow: inset 0 0 0 1px var(--hair), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.theme-nebula .label, .theme-nebula .shead { font-weight: 500; letter-spacing: 0.01em; }
+.theme-nebula .oname { font-weight: 300; font-size: 22px; letter-spacing: 0.01em; }
+.theme-nebula .ocount { color: var(--accent); }
+.theme-nebula .badge { display: block; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: rgba(10, 8, 16, 0.6); }
+.theme-nebula .cell .tile:hover, .theme-nebula .track .tile:hover, .theme-nebula .ogrid .tile:hover { background: var(--accent-soft); }
+.theme-nebula .cluster { background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px var(--hair); }
+.theme-nebula .dot { background: var(--accent); opacity: 0.3; }
+.theme-nebula .dot.on { opacity: 1; box-shadow: 0 0 6px var(--accent); }
+.theme-nebula .btn:hover { background: var(--accent); color: #fff; box-shadow: 0 0 10px var(--accent-glow); }
+.theme-nebula .empty { border-color: var(--hair); }
+.theme-nebula .empty .btn { background: var(--accent); color: #fff; }
+
+/* ======================================================================================
+   LATTE: warm cream, terracotta accents, soft photo-widget feel
+   ====================================================================================== */
+.theme-latte {
+  --chip: var(--accent);
+  --hover: rgba(120, 70, 50, 0.08);
+  --well: rgba(255, 255, 255, 0.5);
+}
+.theme-latte.ink-dark {
+  --ink: #4a2f25;
+  --ink-2: rgba(74, 47, 37, 0.66);
+  --ink-shadow: none;
+  --hair: rgba(255, 255, 255, 0.65);
+  --focus: var(--accent);
+}
+.theme-latte .glass {
+  background: linear-gradient(160deg, #f6e8dc, #e9cfbd);
+  box-shadow: 0 14px 30px rgba(96, 52, 30, 0.24), 0 2px 6px rgba(96, 52, 30, 0.14);
+}
+.theme-latte .tint { background: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.8); }
+.theme-latte.has-cover .tint { background: linear-gradient(180deg, rgba(0, 0, 0, 0) 45%, rgba(40, 20, 10, 0.5)); }
+.theme-latte.has-cover .glass.is-open .tint { background: rgba(40, 22, 14, 0.55); }
+.theme-latte .label { font-weight: 500; text-transform: lowercase; letter-spacing: 0.02em; }
+.theme-latte .oname { font-weight: 600; }
+.theme-latte .cluster { background: rgba(255, 255, 255, 0.5); }
+.theme-latte .dot { background: var(--accent); }
+.theme-latte .ic:not(.chip):not(.ph) { filter: drop-shadow(0 2px 3px rgba(96, 52, 30, 0.22)); }
+.theme-latte .btn:hover { background: var(--accent); color: #fff; box-shadow: none; }
+.theme-latte .empty { border-color: rgba(120, 70, 50, 0.3); }
+
+/* Covers sit under every theme's own surface, so they must win over the theme background. */
+.has-cover .glass { background: #222 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile.selected .ic { transform: none; }
+}
+
+/* ---- Folder that stays small: names under every icon, scrolls inside ---------- */
+.folder.list { padding: 10px 6px 14px; } /* bottom room keeps the scrollbar clear of the resize corner */
+.folder.list .shead { padding: 0 8px 6px 10px; }
+.scount { font-size: 11px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.sgrid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--icon) + 22px), 1fr));
+  align-content: start;
+  gap: 2px;
+  padding: 0 2px 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hair) transparent;
+}
+/* Soft fade at the bottom says "there's more, scroll". */
+.sgrid.more { mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent); }
+.sgrid .tile { gap: 4px; padding: 6px 2px 5px; }
+.sgrid .tile:hover { background: var(--hover); }
+.sgrid .ic { width: var(--icon); height: var(--icon); }
+.sgrid .nm { font-size: 11.5px; }
+.folder.list ~ .lockmark, .strip ~ .lockmark { top: auto; bottom: 8px; }
+.theme-bento .scount { color: var(--accent); font-family: 'Cascadia Mono', Consolas, monospace; }
+.theme-nebula .scount { color: var(--accent); }

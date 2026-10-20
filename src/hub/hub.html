@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: podimg:; style-src 'self'; script-src 'self'">
+<link rel="stylesheet" href="hub.css">
+<title>Desktop Pods Hub</title>
+</head>
+<body>
+<main class="hub">
+  <header class="top">
+    <h1>Desktop Pods</h1>
+    <p class="test-note" id="testNote" hidden>Test mode: these pods use the sandbox, not your real settings.</p>
+  </header>
+
+  <section class="card pending" id="pending" aria-labelledby="pendingTitle" hidden>
+    <h2 id="pendingTitle">Add to a pod</h2>
+    <p class="hint" id="pendingText"></p>
+    <div class="pick" id="pendingPods"></div>
+  </section>
+
+  <section class="card shortcut" aria-labelledby="hkTitle">
+    <div class="row">
+      <div class="row-text">
+        <h2 id="hkTitle">Bring pods to front</h2>
+        <p class="hint" id="hkHint">Press it again, or click anywhere else, to send them back.</p>
+      </div>
+      <div class="keys" id="hkKeys" aria-live="polite"></div>
+    </div>
+    <div class="row actions">
+      <button class="btn" id="hkChange" type="button">Change Shortcut</button>
+      <button class="btn" id="front" type="button">Bring to Front Now</button>
+    </div>
+    <p class="error" id="hkError" role="alert" hidden></p>
+  </section>
+
+  <section aria-labelledby="themeTitle">
+    <h2 id="themeTitle" class="section-title">Look</h2>
+    <p class="hint section-hint">Pick a theme for every pod at once. Each pod can still have its own theme, accent and cover photo below.</p>
+    <div class="themes" id="themes"></div>
+  </section>
+
+  <section aria-labelledby="newTitle">
+    <h2 id="newTitle" class="section-title">Create</h2>
+    <div class="create">
+      <button class="maker" id="newFolder" type="button">
+        <span class="mini mini-folder" aria-hidden="true"><i></i><i></i><i></i><b><i></i><i></i><i></i><i></i></b></span>
+        <span class="maker-name">Folder pod</span>
+        <span class="maker-sub">Names shown, scrolls inside</span>
+      </button>
+      <button class="maker" id="newStrip" type="button">
+        <span class="mini mini-strip" aria-hidden="true"><i></i><i></i><i></i><em><u></u><u></u><u></u></em></span>
+        <span class="maker-name">Strip pod</span>
+        <span class="maker-sub">Scrolls sideways</span>
+      </button>
+      <button class="maker" id="newPhoto" type="button">
+        <span class="mini mini-photo" aria-hidden="true"><s></s></span>
+        <span class="maker-name">Photo widget</span>
+        <span class="maker-sub">Just a picture you love</span>
+      </button>
+    </div>
+  </section>
+
+  <section aria-labelledby="listTitle">
+    <h2 id="listTitle" class="section-title">Your pods</h2>
+    <ul class="pods" id="pods"></ul>
+  </section>
+
+  <section class="card" aria-label="Desktop settings">
+    <label class="row switch-row">
+      <span class="row-text"><span class="row-label">Show pods on the desktop</span></span>
+      <input type="checkbox" class="switch" id="visible">
+    </label>
+    <label class="row switch-row">
+      <span class="row-text">
+        <span class="row-label">Lock every pod in place</span>
+        <span class="hint">Pods can't be dragged or resized by accident. Clicking still works.</span>
+      </span>
+      <input type="checkbox" class="switch" id="lockAll">
+    </label>
+    <label class="row switch-row">
+      <span class="row-text">
+        <span class="row-label">Snap pods into line</span>
+        <span class="hint">While dragging, pods line up with each other and the screen edge.</span>
+      </span>
+      <input type="checkbox" class="switch" id="snap">
+    </label>
+    <label class="row switch-row">
+      <span class="row-text">
+        <span class="row-label">Low memory mode</span>
+        <span class="hint">Draws pods without the graphics card. Uses roughly half the RAM; animations may be slightly less smooth.</span>
+      </span>
+      <input type="checkbox" class="switch" id="lowMemory">
+    </label>
+    <div class="row restart" id="restartRow" hidden>
+      <span class="row-text hint">Restart Desktop Pods to apply this.</span>
+      <button class="btn primary" id="restart" type="button">Restart Now</button>
+    </div>
+    <label class="row switch-row" id="sendToRow">
+      <span class="row-text">
+        <span class="row-label">Add “Send to → Desktop Pods” in File Explorer</span>
+        <span class="hint">Select many files, right-click, Show more options, Send to, Desktop Pods, then pick a pod. Adds one shortcut to your Send to menu; turn off to remove it.</span>
+      </span>
+      <input type="checkbox" class="switch" id="sendTo">
+    </label>
+    <div class="row actions">
+      <button class="btn link" id="openFolder" type="button">Open Settings Folder</button>
+    </div>
+  </section>
+</main>
+<script src="hub.js"></script>
+</body>
+</html>

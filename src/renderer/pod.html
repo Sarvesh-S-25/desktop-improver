@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: podimg:; style-src 'self'; script-src 'self'">
+<link rel="stylesheet" href="pod.css">
+<title>Pod</title>
+</head>
+<body>
+<main id="glass" class="glass" tabindex="-1">
+  <div class="cover" aria-hidden="true"></div>
+  <div class="tint"></div>
+  <section class="closed-view" id="closed"></section>
+  <section class="open-view" id="open" aria-hidden="true"></section>
+  <div class="drop-hint" aria-hidden="true"><span>Drop to add a link</span></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="resize" id="resize" title="Drag to resize"></div>
+</main>
+<script src="pod.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Test sandbox (recreated by `npm run sandbox`)
+sandbox/
+
+# Build output
+dist/
+out/
+
+# Logs and OS files
+*.log
+npm-debug.log*
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor / local AI-assistant settings
+.vscode/
+.idea/
+.claude/
+skills-lock.json
