@@ -23,17 +23,37 @@ Your real files are never moved, renamed or deleted, and File Explorer keeps wor
   <img src="docs/screenshots/hub.png" alt="The Hub: themes, create, and your pods" width="260">
 </p>
 
-## Requirements
+## Install in one step
 
-- Windows 10 or 11
-- [Node.js](https://nodejs.org/) 20 or newer (only needed to install and run from source)
+1. Press **Start**, type **PowerShell**, and open it (no admin needed).
+2. Paste this line and press **Enter**:
 
-## Install
+```powershell
+irm https://raw.githubusercontent.com/Sarvesh-S-25/desktop-improver/main/install.ps1 | iex
+```
+
+That's it. Desktop Pods starts, and you'll find it in the Start Menu and on your desktop.
+
+- **Node.js:** if you don't have it, the installer offers to install it for you with `winget`. Otherwise get the LTS version from [nodejs.org](https://nodejs.org/) and run the line again.
+- **Install location:** the app goes into `%LOCALAPPDATA%\Programs\Desktop Pods`. The first install downloads about 100 MB (Electron).
+- **Updating:** run the same line again. Your pods are kept.
+- **Uninstalling:** run this. It keeps your pods unless you add `-RemoveSettings`:
+
+  ```powershell
+  & "$env:LOCALAPPDATA\Programs\Desktop Pods\uninstall.ps1"
+  ```
+
+You can [read the installer](install.ps1) before running it. It only touches its own folder and the two shortcuts.
+
+**Requirements:** Windows 10 or 11, and Node.js 20 or newer (the installer handles this).
+
+## Install from source (for developers)
 
 ```
-git clone <this repo>
-cd desktop-pods
+git clone https://github.com/Sarvesh-S-25/desktop-improver.git
+cd desktop-improver
 npm install
+npm start
 ```
 
 ## Try it safely first (test mode)

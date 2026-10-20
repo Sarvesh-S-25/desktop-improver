@@ -21,6 +21,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "postinstall": "node node_modules/electron/install.js",
     "start": "electron .",
     "sandbox": "node scripts/make-sandbox.js && electron . --sandbox",
     "sandbox:reset": "node scripts/make-sandbox.js --reset && electron . --sandbox",
